@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+~$*
+.DS_Store
+courseware/assets/screenshots/_render*/
+qa_render*/
+tmp/
