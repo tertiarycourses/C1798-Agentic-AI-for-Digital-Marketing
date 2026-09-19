@@ -1,9 +1,0 @@
-signal_id,source,observed_at,market,topic,hook,engagement_index,brand_fit_1_5,freshness_1_5,evidence_1_5,risk_1_5,source_url
-T01,Google Trends,2026-07-27,Singapore,heat and hydration,The 3pm refill reset,82,5,5,4,1,https://trends.google.com/
-T02,Industry newsletter,2026-07-26,Singapore,return-to-office carry kits,What is in your commute bag,67,5,4,4,1,https://example.com/synthetic-newsletter
-T03,Reddit sample,2026-07-25,Singapore,leaking bottles,Stop the bag spill,74,5,4,3,2,https://example.com/synthetic-thread
-T04,TikTok sample,2026-07-27,Singapore,desk hydration reminders,POV your bottle reminds you,91,4,5,2,2,https://example.com/synthetic-video
-T05,News sample,2026-07-24,Regional,extreme heat,Hydration during hotter days,88,4,3,5,3,https://example.com/synthetic-news
-T06,Competitor review sample,2026-07-23,Singapore,hard-to-clean lids,Five-second lid clean,58,5,3,3,2,https://example.com/synthetic-review
-T07,X sample,2026-07-27,Singapore,celebrity bottle rumour,The bottle a celebrity secretly uses,96,1,5,1,5,https://example.com/synthetic-post
-T08,Search suggestions sample,2026-07-26,Singapore,reusable bottle colours,Pick a colour for your routine,62,4,4,3,1,https://example.com/synthetic-search

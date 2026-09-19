@@ -1,0 +1,253 @@
+{
+  "name": "C1798 Lab 13 - Performance Event Ingestion & Attribution",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n13-01",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\"json\": {\"event_id\": \"EVT-001\", \"campaign_id\": \"CMP-NS-001\", \"asset_id\": \"AST-002\", \"channel\": \"linkedin\", \"event\": \"click\", \"event_time\": \"2026-09-11T10:00:00+08:00\", \"value_sgd\": 0, \"cost_sgd\": 18.5, \"source\": \"socialpost-result-fixture\"}}, {\"json\": {\"event_id\": \"EVT-002\", \"campaign_id\": \"\", \"asset_id\": \"AST-001\", \"channel\": \"website\", \"event\": \"qualified_lead\", \"event_time\": \"2026-09-11T10:04:00+08:00\", \"value_sgd\": 0, \"cost_sgd\": 0, \"source\": \"mock-crm-invalid\"}}];"
+      },
+      "id": "n13-02",
+      "name": "Mock Channel Events",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const x of items) { const j=x.json; j.event_time=new Date(j.event_time).toISOString(); j.valid=Boolean(j.event_id&&j.campaign_id&&j.asset_id&&j.channel&&j.event&&!Number.isNaN(Date.parse(j.event_time))); j.validation_errors=[]; for (const k of ['event_id','campaign_id','asset_id','channel','event','event_time']) if(!j[k]) j.validation_errors.push(k); } return items;"
+      },
+      "id": "n13-03",
+      "name": "Normalise Schema",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen=new Set(); for (const x of items) { x.json.duplicate=seen.has(x.json.event_id); seen.add(x.json.event_id); } return items;"
+      },
+      "id": "n13-04",
+      "name": "Deduplicate Event IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "n13-05-condition",
+              "leftValue": "={{ $json.valid === true && $json.duplicate === false }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "n13-05",
+      "name": "Valid Event?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const x of items) { x.json.campaign_joined=x.json.campaign_id==='CMP-NS-001'; } return items;"
+      },
+      "id": "n13-06",
+      "name": "Join Campaign Map",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const x of items) { x.json.attribution_model='last eligible touch fixture'; x.json.attributed=x.json.campaign_joined===true; x.json.limitation='Training fixture derived from retained platform result'; } return items;"
+      },
+      "id": "n13-07",
+      "name": "Attribution Rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const x of items) { x.json.terminal_node='Performance Facts'; x.json.fact_status='ACCEPTED'; } return items;"
+      },
+      "id": "n13-08",
+      "name": "Performance Facts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2060,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const x of items) { x.json.terminal_node='Quarantine'; x.json.fact_status='QUARANTINED'; x.json.quarantine_reason=x.json.duplicate?'DUPLICATE_EVENT':'INVALID_EVENT'; } return items;"
+      },
+      "id": "n13-09",
+      "name": "Quarantine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Lab 13: Performance Event Ingestion & Attribution\n\n**Input:** data/performance_events.xlsx\n\n**Metric:** data_quality = valid_unique_events / received_events\n\n**Risk:** Inconsistent IDs and time zones can misattribute outcomes\n\nDRY RUN: credentialed publishing stays disabled until a trainer authorises live credentials.",
+        "height": 150,
+        "width": 900
+      },
+      "id": "note-13",
+      "name": "Lab Contract",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        240,
+        20
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Mock Channel Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mock Channel Events": {
+      "main": [
+        [
+          {
+            "node": "Normalise Schema",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise Schema": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate Event IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate Event IDs": {
+      "main": [
+        [
+          {
+            "node": "Valid Event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid Event?": {
+      "main": [
+        [
+          {
+            "node": "Join Campaign Map",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Quarantine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Join Campaign Map": {
+      "main": [
+        [
+          {
+            "node": "Attribution Rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attribution Rules": {
+      "main": [
+        [
+          {
+            "node": "Performance Facts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true
+  },
+  "versionId": "12520ea53ef41cee3eecd2e14dda27d8",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
